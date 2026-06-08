@@ -49,10 +49,14 @@
       @for (task of tasks.value(); track task.id) {
         <app-task
           [task]="task"
+          (taskAction)="onTaskAction($event)"
         />
       }
     </section>
   } @else {
     <p>Loading...</p>
+  }
+  @if (tasks.error()) {
+    <p>An error occured</p>
   }
 </div>
