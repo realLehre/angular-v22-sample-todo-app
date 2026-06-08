@@ -6,6 +6,11 @@ import { Task, TaskForm } from './tasks.model';
 export class TasksService {
   private http = inject(HttpClient);
   baseUrl = 'https://6a248a2d420469ff067b1f54.mockapi.io/api/v1/';
+  initialFormData = {
+    name: '',
+    description: '',
+    completed: false,
+  };
 
   tasks = httpResource<Task[]>(() => `${this.baseUrl}tasks`);
 

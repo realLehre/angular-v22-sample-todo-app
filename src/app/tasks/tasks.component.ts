@@ -14,28 +14,38 @@ import { TaskComponent } from './task/task.component';
 export class TasksComponent {
   private readonly taskService = inject(TasksService);
   tasks = this.taskService.tasks;
-  taskFormModel = signal<TaskForm>({
-    name: '',
-    description: '',
-    completed: false,
-  });
+  taskFormModel = signal<TaskForm>(this.taskService.initialFormData);
   taskForm = form(this.taskFormModel);
+  editing = signal(false);
+  activeTaskId = signal<string | null>(null);
 
   protected onSubmit() {
     console.log(this.taskForm().value());
     const task = this.taskForm().value();
-    this.taskService.addTask(task).subscribe({
-      next: () => {
-        this.taskForm().reset();
-        this.tasks.reload();
-      },
-      error: (err) => {
-        console.error('Error adding task:', err);
-      },
-    });
+    if(!this.editing()) {
+      this.taskService.addTask(task).subscribe({
+        next: () => {
+          this.resetState();
+        },
+        error: (err) => {
+          console.error('Error adding task:', err);
+        },
+      });
+    } else {
+      this.taskService.editTask(this.activeTaskId()!, task).subscribe({
+        next: () => {
+          this.resetState();
+        },
+        error: (err) => {
+          console.error('Error editing task:', err);
+        },
+      });
+
+    }
   }
 
   protected onTaskAction($event: { type: 'edit' | 'delete'; id: string }) {
+    this.activeTaskId.set($event.id);
     if($event.type === 'delete') {
       if(confirm('Are you sure you want to delete this task?')) {
         this.taskService.deleteTask($event.id).subscribe({
@@ -51,6 +61,14 @@ export class TasksComponent {
     } else if($event.type === 'edit') {
       const task = this.tasks.value()?.find(t => t.id === $event.id);
       this.taskFormModel.set({...task!})
+      this.editing.set(true);
     }
+  }
+
+  protected resetState() {
+    this.taskFormModel.set(this.taskService.initialFormData);
+    this.tasks.reload();
+    this.activeTaskId.set(null);
+    this.editing.set(false);
   }
 }
