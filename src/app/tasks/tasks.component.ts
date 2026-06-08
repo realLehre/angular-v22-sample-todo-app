@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { TasksService } from './tasks.service';
-import { TaskForm } from './tasks.model';
+import { formSchema, TaskForm } from './tasks.model';
 import { form, FormField, required } from '@angular/forms/signals';
 import { FormsModule } from '@angular/forms';
 import { TaskComponent } from './task/task.component';
@@ -15,15 +15,7 @@ export class TasksComponent {
   private readonly taskService = inject(TasksService);
   tasks = this.taskService.tasks;
   taskFormModel = signal<TaskForm>(this.taskService.initialFormData);
-  taskForm = form(this.taskFormModel, (schemaPath) => {
-    required(schemaPath.name, {
-      message: 'Task name is required',
-    });
-
-    required(schemaPath.description, {
-      message: 'Task description is required',
-    })
-  });
+  taskForm = form(this.taskFormModel, formSchema);
   editing = signal(false);
   activeTaskId = signal<string | null>(null);
 
